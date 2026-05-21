@@ -66,7 +66,7 @@ Devuelve SOLO el JSON, sin explicaciones ni markdown.
 `;
 
   const response = await claude.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-5",
     max_tokens: 1000,
     system: SKILL_CONTENT,
     messages: [{ role: "user", content: prompt }],
