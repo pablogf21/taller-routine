@@ -73,8 +73,8 @@ Devuelve SOLO el JSON, sin explicaciones ni markdown.
   });
 
   const texto = response.content[0].text.trim();
-  return JSON.parse(texto);
-}
+const limpio = texto.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+return JSON.parse(limpio);
 
 // ─── Simuladores de envío (reemplaza con tu proveedor real) ──────────────────
 
