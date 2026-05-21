@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo — Talleres Tres Cantos</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+    .header { background: #1a1a1a; color: white; padding: 16px 20px; text-align: center; }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header p { font-size: 13px; color: #aaa; margin-top: 4px; }
+
+    .container { max-width: 420px; margin: 0 auto; padding: 20px 16px; }
+
+    .scenario { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid #e5e5e5; }
+    .scenario-title { font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+
+    .field { margin-bottom: 12px; }
+    .field label { font-size: 13px; color: #666; display: block; margin-bottom: 4px; }
+    .field input, .field select {
+      width: 100%; padding: 10px 12px; border: 1.5px solid #e5e5e5;
+      border-radius: 10px; font-size: 15px; background: #fafafa;
+      outline: none; -webkit-appearance: none;
+    }
+    .field input:focus, .field select:focus { border-color: #1a1a1a; background: white; }
+
+    .btn-demo {
+      width: 100%; padding: 16px; background: #1a1a1a; color: white;
+      border: none; border-radius: 14px; font-size: 16px; font-weight: 600;
+      cursor: pointer; margin-top: 4px; letter-spacing: 0.01em;
+    }
+    .btn-demo:active { transform: scale(0.98); }
+    .btn-demo:disabled { background: #ccc; }
+
+    .timeline { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid #e5e5e5; display: none; }
+    .tl-item { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+    .tl-item:last-child { margin-bottom: 0; }
+    .tl-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; background: #f0f0f0; }
+    .tl-dot.done { background: #e8f5e9; }
+    .tl-dot.active { background: #fff3e0; }
+    .tl-text { flex: 1; padding-top: 5px; }
+    .tl-title { font-size: 14px; font-weight: 600; }
+    .tl-desc { font-size: 12px; color: #888; margin-top: 2px; }
+    .tl-time { font-size: 11px; color: #4caf50; font-weight: 600; margin-top: 2px; }
+
+    .phone-section { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid #e5e5e5; display: none; }
+    .phone-label { font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+
+    .phone-frame { background: #f5f5f5; border-radius: 20px; padding: 12px; max-width: 280px; margin: 0 auto; border: 2px solid #ddd; }
+    .phone-bar { display: flex; justify-content: space-between; padding: 4px 8px 8px; font-size: 11px; color: #888; }
+    .chat-header { background: #075e54; color: white; padding: 10px 12px; border-radius: 10px 10px 0 0; display: flex; align-items: center; gap: 8px; }
+    .chat-avatar { width: 32px; height: 32px; border-radius: 50%; background: #128c7e; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; }
+    .chat-name { font-size: 14px; font-weight: 600; }
+    .chat-status { font-size: 11px; opacity: 0.8; }
+    .chat-body { background: #e5ddd5; padding: 12px 10px; border-radius: 0 0 10px 10px; min-height: 120px; }
+    .msg { background: white; border-radius: 8px 8px 8px 2px; padding: 8px 10px; margin-bottom: 6px; max-width: 90%; font-size: 13px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .msg-time { font-size: 10px; color: #999; text-align: right; margin-top: 3px; }
+    .typing { display: flex; gap: 4px; align-items: center; padding: 8px 10px; background: white; border-radius: 8px; width: fit-content; margin-bottom: 6px; }
+    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: #999; animation: bounce 0.8s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+
+    .result-section { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid #e5e5e5; display: none; }
+    .result-label { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; margin-top: 14px; }
+    .result-label:first-child { margin-top: 0; }
+    .result-msg { background: #f8f8f8; border-left: 3px solid #075e54; border-radius: 0 8px 8px 0; padding: 12px; font-size: 14px; line-height: 1.6; color: #1a1a1a; }
+    .result-msg.email { border-left-color: #1565c0; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+    .stat { background: #f8f8f8; border-radius: 10px; padding: 10px; text-align: center; }
+    .stat-n { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+    .stat-l { font-size: 11px; color: #888; margin-top: 2px; }
+
+    .btn-reset { width: 100%; padding: 12px; background: transparent; color: #888; border: 1.5px solid #e5e5e5; border-radius: 12px; font-size: 14px; cursor: pointer; margin-top: 8px; }
+
+    .badge { display: inline-block; background: #e8f5e9; color: #2e7d32; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Sistema de recuperación de llamadas</h1>
+  <p>Demo en vivo — Talleres Tres Cantos</p>
+</div>
+
+<div class="container">
+
+  <div class="scenario">
+    <div class="scenario-title">Simula una llamada perdida</div>
+
+    <div class="field">
+      <label>Nombre del cliente</label>
+      <input type="text" id="nombre" value="Carlos Martín" placeholder="Nombre del cliente">
+    </div>
+    <div class="field">
+      <label>Teléfono</label>
+      <input type="tel" id="telefono" value="+34 612 345 678">
+    </div>
+    <div class="field">
+      <label>Hora de la llamada</label>
+      <input type="text" id="hora" value="11:42">
+    </div>
+    <div class="field">
+      <label>Motivo probable</label>
+      <select id="motivo">
+        <option value="presupuesto de frenos">Presupuesto frenos</option>
+        <option value="revisión general">Revisión general</option>
+        <option value="ITV próxima">ITV próxima</option>
+        <option value="avería motor">Avería motor</option>
+        <option value="cambio de aceite">Cambio de aceite</option>
+        <option value="consulta general">Consulta general</option>
+      </select>
+    </div>
+
+    <button class="btn-demo" id="btn-lanzar" onclick="lanzar()">
+      Simular llamada perdida
+    </button>
+  </div>
+
+  <div class="timeline" id="timeline">
+    <div class="scenario-title">Flujo en tiempo real</div>
+    <div class="tl-item">
+      <div class="tl-dot done" id="ic1">📞</div>
+      <div class="tl-text">
+        <div class="tl-title">Llamada perdida detectada</div>
+        <div class="tl-desc" id="d1">Webhook recibido del sistema de telefonía</div>
+        <div class="tl-time" id="t1">+0.1s</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot active" id="ic2">🤖</div>
+      <div class="tl-text">
+        <div class="tl-title">Claude generando mensaje</div>
+        <div class="tl-desc" id="d2">Cargando instrucciones del taller...</div>
+        <div class="tl-time" id="t2"></div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" id="ic3">💬</div>
+      <div class="tl-text">
+        <div class="tl-title">WhatsApp enviado</div>
+        <div class="tl-desc" id="d3">Esperando...</div>
+        <div class="tl-time" id="t3"></div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot" id="ic4">📧</div>
+      <div class="tl-text">
+        <div class="tl-title">Email de seguimiento</div>
+        <div class="tl-desc" id="d4">Esperando...</div>
+        <div class="tl-time" id="t4"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-section" id="phone-section">
+    <div class="phone-label">Vista del cliente</div>
+    <div class="phone-frame">
+      <div class="phone-bar"><span>9:41</span><span>●●●</span></div>
+      <div class="chat-header">
+        <div class="chat-avatar" id="av">TC</div>
+        <div>
+          <div class="chat-name">Talleres Tres Cantos</div>
+          <div class="chat-status">en línea</div>
+        </div>
+      </div>
+      <div class="chat-body" id="chat-body">
+        <div class="typing" id="typing">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-section" id="result-section">
+    <div class="badge">✓ Sistema funcionando</div>
+    <div class="result-label">Mensaje WhatsApp generado</div>
+    <div class="result-msg" id="res-wa"></div>
+    <div class="result-label">Email de seguimiento</div>
+    <div class="result-msg email" id="res-email"></div>
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="st-t">—</div><div class="stat-l">segundos</div></div>
+      <div class="stat"><div class="stat-n" id="st-c">—</div><div class="stat-l">caracteres</div></div>
+      <div class="stat"><div class="stat-n">2</div><div class="stat-l">canales</div></div>
+    </div>
+    <button class="btn-reset" onclick="reset()">Probar otro caso</button>
+  </div>
+
+</div>
+
+<script>
+const RAILWAY_URL = "https://taller-routine-production.up.railway.app";
+
+const FALLBACK = {
+  "presupuesto de frenos": {
+    wa: "Hola {nombre}, soy Talleres Tres Cantos en Tres Cantos. Vi que nos llamaste a las {hora} y no pudimos cogerte, perdona. Si es por los frenos dinos la marca y modelo de tu coche y te pasamos precio hoy mismo. Puedes responder aquí o llamarnos al 91 804 15 14.",
+    email: "Hola {nombre},\n\nTe escribimos desde Talleres Tres Cantos porque nos dejaste una llamada a las {hora} de hoy.\n\nSi necesitas presupuesto para los frenos, dinos la marca y modelo y te respondemos antes de las 18h.\n\nUn saludo,\nEl equipo de Talleres Tres Cantos\nRonda de Valdecarrizo 25, Tres Cantos · 91 804 15 14"
+  },
+  "revisión general": {
+    wa: "Hola {nombre}, soy Talleres Tres Cantos. Vi que nos llamaste a las {hora}. Para una revisión general tenemos hueco esta semana. ¿Qué día te viene bien? Llámanos al 91 804 15 14 o responde aquí.",
+    email: "Hola {nombre},\n\nTe escribimos desde Talleres Tres Cantos porque nos llamaste a las {hora}.\n\nPara la revisión general tenemos disponibilidad esta semana. Cuéntanos cuándo te viene mejor.\n\nUn saludo,\nEl equipo de Talleres Tres Cantos"
+  },
+  "ITV próxima": {
+    wa: "Hola {nombre}, soy Talleres Tres Cantos. Vi tu llamada de las {hora}. Si es por la ITV, hacemos revisión previa gratuita y te acompañamos. Dinos la fecha límite y lo organizamos. Responde aquí o llámanos al 91 804 15 14.",
+    email: "Hola {nombre},\n\nTe escribimos desde Talleres Tres Cantos porque nos llamaste a las {hora}.\n\nSi tienes la ITV próxima, podemos hacerte una revisión previa gratuita. Solo dinos la fecha límite.\n\nUn saludo,\nEl equipo de Talleres Tres Cantos"
+  },
+  "avería motor": {
+    wa: "Hola {nombre}, soy Talleres Tres Cantos. Perdimos tu llamada de las {hora}. Si tienes una avería ahora mismo, cuéntanos qué síntomas tiene el coche y te orientamos enseguida. Llámanos al 91 804 15 14.",
+    email: "Hola {nombre},\n\nTe escribimos desde Talleres Tres Cantos porque nos llamaste a las {hora}.\n\nSi tienes una avería, cuéntanos qué le pasa al coche y te ayudamos a valorar si necesitas asistencia.\n\nUn saludo,\nEl equipo de Talleres Tres Cantos"
+  },
+  "cambio de aceite": {
+    wa: "Hola {nombre}, soy Talleres Tres Cantos. Vi tu llamada de las {hora}. Para el cambio de aceite tenemos hueco esta tarde o mañana. ¿Cuándo te viene mejor? Responde aquí o llámanos al 91 804 15 14.",
+    email: "Hola {nombre},\n\nTe escribimos desde Talleres Tres Cantos porque nos llamaste a las {hora}.\n\nPara el cambio de aceite tenemos disponibilidad hoy y mañana. Dinos cuándo te viene bien.\n\nUn saludo,\nEl equipo de Talleres Tres Cantos"
+  },
+  "consulta general": {
+    wa: "Hola {nombre}, soy Talleres Tres Cantos en Tres Cantos. Vi que nos llamaste a las {hora} y no pudimos atenderte. ¿En qué podemos ayudarte? Responde aquí o llámanos al 91 804 15 14.",
+    email: "Hola {nombre},\n\nTe escribimos desde Talleres Tres Cantos porque nos dejaste una llamada a las {hora}.\n\nEstamos aquí para ayudarte. Cuéntanos qué necesitas.\n\nUn saludo,\nEl equipo de Talleres Tres Cantos"
+  }
+};
+
+async function lanzar() {
+  const nombre = document.getElementById("nombre").value || "Cliente";
+  const telefono = document.getElementById("telefono").value;
+  const hora = document.getElementById("hora").value;
+  const motivo = document.getElementById("motivo").value;
+
+  document.getElementById("btn-lanzar").disabled = true;
+  document.getElementById("timeline").style.display = "block";
+  document.getElementById("phone-section").style.display = "block";
+  document.getElementById("result-section").style.display = "none";
+
+  const t0 = Date.now();
+
+  await sleep(800);
+  setStep(2, "🤖", "active", "Generando mensaje personalizado...", "");
+
+  let waMsg, emailMsg;
+
+  try {
+    const res = await fetch(RAILWAY_URL + "/webhook/llamada-perdida", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nombre_cliente: nombre,
+        numero_cliente: telefono,
+        hora_llamada: hora,
+        motivo_probable: motivo,
+        email_cliente: "cliente@ejemplo.com"
+      })
+    });
+    const data = await res.json();
+    waMsg = data.whatsapp;
+    emailMsg = "Email enviado correctamente al cliente.";
+  } catch (e) {
+    const fb = FALLBACK[motivo] || FALLBACK["consulta general"];
+    waMsg = fb.wa.replace(/{nombre}/g, nombre.split(" ")[0]).replace(/{hora}/g, hora);
+    emailMsg = fb.email.replace(/{nombre}/g, nombre.split(" ")[0]).replace(/{hora}/g, hora);
+  }
+
+  const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+
+  setStep(2, "🤖", "done", "Mensaje generado con éxito", "+" + elapsed + "s");
+
+  await sleep(400);
+  setStep(3, "💬", "done", "WhatsApp enviado al cliente", "+" + elapsed + "s");
+
+  const chatBody = document.getElementById("chat-body");
+  chatBody.innerHTML = "";
+  const msg = document.createElement("div");
+  msg.className = "msg";
+  msg.innerHTML = waMsg + '<div class="msg-time">' + hora + ' ✓✓</div>';
+  chatBody.appendChild(msg);
+
+  await sleep(400);
+  setStep(4, "📧", "done", "Email enviado", "+" + ((Date.now()-t0)/1000).toFixed(1) + "s");
+
+  document.getElementById("res-wa").textContent = waMsg;
+  document.getElementById("res-email").textContent = emailMsg;
+  document.getElementById("st-t").textContent = elapsed;
+  document.getElementById("st-c").textContent = waMsg.length;
+  document.getElementById("result-section").style.display = "block";
+}
+
+function setStep(n, emoji, state, desc, tiempo) {
+  const ic = document.getElementById("ic" + n);
+  const d = document.getElementById("d" + n);
+  const t = document.getElementById("t" + n);
+  ic.textContent = emoji;
+  ic.className = "tl-dot " + state;
+  d.textContent = desc;
+  if (tiempo) t.textContent = tiempo;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function reset() {
+  document.getElementById("btn-lanzar").disabled = false;
+  document.getElementById("timeline").style.display = "none";
+  document.getElementById("phone-section").style.display = "none";
+  document.getElementById("result-section").style.display = "none";
+  document.getElementById("chat-body").innerHTML = '<div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+}
+</script>
+
+</body>
+</html>
