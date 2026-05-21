@@ -1,0 +1,4 @@
+[phases.build] 
+cmds = ["npm install"] 
+[start] 
+cmd = "node routine.js" 
