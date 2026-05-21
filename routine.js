@@ -8,7 +8,7 @@ import Anthropic from "@anthropic-ai/sdk";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.use(express.json());
-
+app.use(express.static(__dirname));
 const TALLER = {
   nombre: process.env.TALLER_NOMBRE || "Taller Martinez",
   telefono: process.env.TALLER_TELEFONO || "91 123 45 67",
