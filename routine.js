@@ -52,10 +52,16 @@ Genera exactamente este JSON sin markdown:
 }
 
 async function enviarWhatsApp(numero, mensaje) {
-  console.log("WHATSAPP -> " + numero + ": " + mensaje);
+  const twilio = (await import("twilio")).default;
+  const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+  await client.messages.create({
+    from: process.env.TWILIO_WHATSAPP_FROM,
+    to: "whatsapp:" + numero.replace(/\s/g, ""),
+    body: mensaje
+  });
+  console.log("WHATSAPP enviado -> " + numero);
   return { ok: true, canal: "whatsapp", numero };
 }
-
 async function enviarEmail(email, asunto, cuerpo) {
   console.log("EMAIL -> " + email + ": " + asunto);
   return { ok: true, canal: "email" };
