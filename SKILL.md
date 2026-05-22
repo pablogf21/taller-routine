@@ -9,7 +9,7 @@ Cuando un cliente llama al taller y no se puede atender, este skill genera autom
 
 **Nombre del taller:** [NOMBRE_TALLER]
 **Ubicación:** [DIRECCIÓN, MADRID]
-**Teléfono:** [TELÉFONO]
+**Teléfono:** 91 804 15 14
 **Horario:** Lunes a viernes 8:00–19:00 / Sábados 9:00–14:00
 **Especialidades:** [Ej: mecánica general, frenos, ITV, diagnosis electrónica]
 **Tiempo medio de respuesta a presupuestos:** [Ej: mismo día antes de las 18h]
