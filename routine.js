@@ -127,7 +127,44 @@ app.post("/test", async (req, res) => {
 app.get("/health", (_, res) => {
   res.json({ ok: true, taller: TALLER.nombre, skill_cargado: true, uptime_segundos: Math.round(process.uptime()) });
 });
+app.post("/generar-respuesta-resena", async (req, res) => {
+  const { nombre_cliente, texto_resena, estrellas } = req.body;
+  if (!texto_resena) return res.status(400).json({ error: "texto_resena es obligatorio" });
 
+  const skillResenas = fs.readFileSync(path.join(__dirname, "skills", "SKILL_resenas.md"), "utf-8")
+    .replace(/\[NOMBRE_TALLER\]/g, TALLER.nombre)
+    .replace(/\[TELEFONO\]/g, TALLER.telefono)
+    .replace(/\[EMAIL\]/g, TALLER.email_remitente);
+
+  const prompt = `Analiza esta reseña negativa y genera la respuesta.
+
+Datos:
+- Nombre del cliente: ${nombre_cliente || "desconocido"}
+- Estrellas: ${estrellas}
+- Texto de la reseña: "${texto_resena}"
+
+Responde SOLO con este JSON sin markdown:
+{
+  "tipo_resena": "Queja legítima | Malentendido | Reseña injusta | Reseña de competencia",
+  "respuesta_publica": "respuesta para publicar en Google máximo 5 frases",
+  "nota_interna": "nota para el equipo del taller con acción recomendada"
+}`;
+
+  try {
+    const response = await claude.messages.create({
+      model: "claude-sonnet-4-5",
+      max_tokens: 1000,
+      system: skillResenas,
+      messages: [{ role: "user", content: prompt }],
+    });
+    const texto = response.content[0].text.trim();
+    const limpio = texto.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const data = JSON.parse(limpio);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("ROUTINE activa - Puerto: " + PORT);

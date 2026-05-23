@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responder reseña — Talleres Tres Cantos</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+    .header { background: #1a1a1a; color: white; padding: 16px 20px; text-align: center; }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header p { font-size: 13px; color: #aaa; margin-top: 4px; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px 16px; }
+    .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid #e5e5e5; }
+    .label { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; }
+    textarea { width: 100%; padding: 12px; border: 1.5px solid #e5e5e5; border-radius: 10px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 100px; outline: none; }
+    textarea:focus { border-color: #1a1a1a; }
+    select, input { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e5e5; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; margin-bottom: 12px; -webkit-appearance: none; }
+    select:focus, input:focus { border-color: #1a1a1a; }
+    .btn { width: 100%; padding: 14px; background: #1a1a1a; color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+    .btn:disabled { background: #ccc; }
+    .result { background: #f8f8f8; border-left: 3px solid #1a1a1a; border-radius: 0 10px 10px 0; padding: 14px; font-size: 14px; line-height: 1.7; margin-top: 12px; white-space: pre-wrap; }
+    .result.nota { border-left-color: #ff9800; background: #fff8f0; }
+    .btn-copy { width: 100%; padding: 10px; background: transparent; border: 1.5px solid #1a1a1a; border-radius: 10px; font-size: 13px; cursor: pointer; margin-top: 8px; font-weight: 500; }
+    .btn-copy:active { background: #f0f0f0; }
+    .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
+    .badge-verde { background: #e8f5e9; color: #2e7d32; }
+    .badge-rojo { background: #ffebee; color: #c62828; }
+    .spinner { display: none; text-align: center; padding: 20px; color: #888; font-size: 14px; }
+    .stars { display: flex; gap: 6px; margin-bottom: 12px; }
+    .star { font-size: 28px; cursor: pointer; opacity: 0.3; transition: opacity 0.1s; }
+    .star.active { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Responder reseña negativa</h1>
+  <p>Talleres Tres Cantos — powered by IA</p>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <label class="label">Nombre del cliente (en Google)</label>
+    <input type="text" id="nombre" placeholder="Ej: Antonio R.">
+
+    <label class="label">Valoración</label>
+    <div class="stars" id="stars">
+      <span class="star" onclick="setStar(1)">⭐</span>
+      <span class="star" onclick="setStar(2)">⭐</span>
+      <span class="star" onclick="setStar(3)">⭐</span>
+      <span class="star" onclick="setStar(4)">⭐</span>
+      <span class="star" onclick="setStar(5)">⭐</span>
+    </div>
+
+    <label class="label">Texto de la reseña</label>
+    <textarea id="resena" placeholder="Pega aquí el texto de la reseña de Google..."></textarea>
+
+    <button class="btn" id="btn-generar" onclick="generar()">Generar respuesta</button>
+  </div>
+
+  <div class="spinner" id="spinner">Generando respuesta con IA...</div>
+
+  <div id="resultado" style="display:none">
+    <div class="card">
+      <span class="badge badge-verde" id="badge-tipo"></span>
+      <label class="label">Respuesta para copiar en Google</label>
+      <div class="result" id="res-publica"></div>
+      <button class="btn-copy" onclick="copiar('res-publica')">Copiar respuesta</button>
+    </div>
+    <div class="card">
+      <label class="label">Nota interna para el equipo</label>
+      <div class="result nota" id="res-nota"></div>
+    </div>
+    <button class="btn" onclick="reset()" style="background:#444">Analizar otra reseña</button>
+  </div>
+
+</div>
+
+<script>
+let estrellas = 0;
+
+function setStar(n) {
+  estrellas = n;
+  document.querySelectorAll('.star').forEach((s, i) => {
+    s.classList.toggle('active', i < n);
+  });
+}
+
+async function generar() {
+  const nombre = document.getElementById('nombre').value || 'Cliente';
+  const resena = document.getElementById('resena').value;
+  if (!resena.trim()) { alert('Por favor pega el texto de la reseña'); return; }
+  if (!estrellas) { alert('Por favor selecciona la valoración'); return; }
+
+  document.getElementById('btn-generar').disabled = true;
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('resultado').style.display = 'none';
+
+  try {
+    const res = await fetch('/generar-respuesta-resena', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre_cliente: nombre, texto_resena: resena, estrellas })
+    });
+    const data = await res.json();
+
+    document.getElementById('res-publica').textContent = data.respuesta_publica;
+    document.getElementById('res-nota').textContent = data.nota_interna;
+    document.getElementById('badge-tipo').textContent = data.tipo_resena;
+    document.getElementById('resultado').style.display = 'block';
+  } catch (e) {
+    alert('Error al generar la respuesta. Inténtalo de nuevo.');
+  }
+
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('btn-generar').disabled = false;
+}
+
+function copiar(id) {
+  const texto = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(texto).then(() => {
+    alert('Copiado al portapapeles');
+  });
+}
+
+function reset() {
+  document.getElementById('nombre').value = '';
+  document.getElementById('resena').value = '';
+  document.getElementById('resultado').style.display = 'none';
+  estrellas = 0;
+  document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+}
+</script>
+</body>
+</html>
