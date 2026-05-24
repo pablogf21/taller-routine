@@ -28,12 +28,13 @@ const claude = new Anthropic();
 
 async function generarMensajes(datos) {
   const { nombre_cliente, numero_cliente, hora_llamada, motivo_probable, tiene_email } = datos;
-  const prompt = `Eres el asistente de ${TALLER.nombre}. Acaba de perderse una llamada.
+  const prompt = `Eres el asistente de ${datos.taller_nombre || TALLER.nombre}. Acaba de perderse una llamada.
 Datos:
 - Nombre: ${nombre_cliente || "desconocido"}
 - Numero: ${numero_cliente}
 - Hora: ${hora_llamada}
 - Motivo: ${motivo_probable || "consulta general"}
+- Telefono del taller: ${datos.taller_telefono || TALLER.telefono}
 - Tiene email: ${tiene_email ? "si" : "no"}
 
 Genera exactamente este JSON sin markdown:
